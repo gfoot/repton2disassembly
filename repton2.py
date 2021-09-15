@@ -317,7 +317,6 @@ expr(0x1217, ">data_font")
 label(0x121c, "draw_character_loop")
 
 label(0x1226, "unpack_level")
-#comment(0x1226, "
 label(0x1230, "unpack_level_loop")
 
 label(0x1241, "new_level")           # after transporter effect
@@ -369,7 +368,7 @@ label(0x13e0, "redraw_from_centre_loop")
 label(0x1408, "redraw_from_centre_loop2")
 label(0x142f, "redraw_from_centre_loop3")
 
-label(0x1455, "transporter_effect") # I think?
+label(0x1455, "transporter_effect")
 label(0x1459, "transporter_effect_size_loop")
 label(0x1481, "transporter_effect_horiz_loop")
 label(0x14a6, "transporter_effect_vert_loop")
@@ -763,7 +762,7 @@ label(0x27d7, "string_enter_your_name")
 label(0x27f5, "print_string_flush_buffers")
 
 label(0x2800, "data_level_strip_indices")
-comment(0x2800, "Four strips per level; positive refers to a position in data_levelstrip_xx")
+comment(0x2800, "Each level consists of four 32x8 strips.  Positive values refer to entries in data_levelstrip_xx")
 comment(0x2800, "For a negative value, clear the top bit and fill the level strip with that object")
 comment(0x2800, "    e.g. &98 => fill with object &18 which is a type of wall")
 for i in range(16):
@@ -771,7 +770,7 @@ for i in range(16):
 	byte(0x2800+4*i, 4)
 
 label(0x2840, "data_transporters")
-comment(0x2840, "Six bytes per transporter - level, x, y, target level, target x, target y")
+comment(0x2840, "Six bytes per transporter - level, x, y, target level, target x, target y.  This is constant data except that the top bit of 'level' gets set when the transporter is collected.  This is then cleared next time a new game is started, along with all the top bits of this block and the next few blocks (spirits, monsters, puzzle pieces).")
 
 for i in range(64):
 	byte(0x2840+6*i, 6)
@@ -779,13 +778,15 @@ for i in range(64):
 
 label(0x29c0, "data_transporters_end")
 
+comment(0x29c8, "Each spirit gets four bytes - its x,y position, the direction it's moving in, and whether or not it is alive.  This is variable data.")
 byte(0x29c8, 0x20)
 label(0x29c8, "data_spirit_x")
 label(0x29c9, "data_spirit_y")
 label(0x29ca, "data_spirit_dir")
 label(0x29cb, "data_spirit_alive")
 
-byte(0x29e8, 8*4-16)   # overlaps with data_puzzlepieces[0]
+comment(0x29e8, "There appear to be 8 bytes per monster, storing the x,y position, x,y velocity, a timer to track the cracked egg and initial stationary period, and a flag to say whether the monster is alive.  The last two bytes for each monster appear to be unused.  This is variable data.")
+byte(0x29e8, 8*2)
 label(0x29e8, "data_monsters_x")
 label(0x29e9, "data_monsters_y")
 label(0x29ea, "data_monsters_vel_x")
@@ -793,6 +794,7 @@ label(0x29eb, "data_monsters_vel_y")
 label(0x29ec, "data_monsters_spawntimer")
 label(0x29ed, "data_monsters_alive")
 
+comment(0x29f8, "Each puzzle pieces has four bytes - the level it appears in, its x,y location in that level, and its position within the assembled puzzle at the bottom of map 0.  Most of this is constant data, but the top bit of 'level' is variable - it gets set when the piece is collected.")
 byte(0x29f8, 0xa8)
 label(0x29f8, "data_puzzlepieces_level")
 label(0x29f9, "data_puzzlepieces_x")
@@ -800,11 +802,15 @@ label(0x29fa, "data_puzzlepieces_y")
 label(0x29fb, "data_puzzlepieces_pos")
 
 label(0x2aa0, "data_tilegraphics_indices")
+comment(0x2aa0, "For each tile (indexed by the 'obj_*' constants) there are 16 subtiles arranged in a 4x4 grid.  Each gets one index here, which indexes into data_tilegraphics_tiles.")
+
+comment(0x2f40, "This is the actual image data for the subtiles.  8 bytes per 4x8 subtile, in the usual BBC Micro 4-colour format.  I've labelled some of them, e.g. bits of sprites, but not all of them.")
 
 label(0x2f40, "data_tilegraphics_tiles")
 for x in range(0,0x440,8):
 	byte(0x2f40+x, 8)
 
+comment(0x3380, "Some code is embedded in the middle of data_tilegarphics_tiles")
 label(0x3380, "data_additional_palette_levels_0_1")
 byte(0x3380, 2)
 
@@ -818,11 +824,16 @@ label(0x33a3, "transporter_same_level")
 
 label(0x33b8, "move_monster2")
 
-comment(0x33d8, "More tile graphics data")
+comment(0x33bb, "I think this is unused junk, it looks like a little bit of code and some string data, but it's not used as far as I can tell.")
+
+comment(0x33d8, "More data_tilegraphics_tiles data")
 for x in range(0,0xe28,8):
 	byte(0x33d8+x, 8)
 
+comment(0x3400, "The font characters kind of also function as tilegraphics tiles, or at least are embedded in that data block.  8 bytes each as usual - and this is just a zero-reference point, the actual characters don't really start until 3500 (space)")
 label(0x3400, "data_font")
+
+comment(0x4200, "Level strip data - each strip is a 32x8 region of the level, packed with 5 bits per tile, so 0x30 bytes per strip.  Transporters and puzzle pieces are defined elsewhere.  The 'end' object on map 0 is encoded as a spirit, with special code making the substitution.")
 
 levelstripsize = 0x100*5//8
 for i in range(0x30):

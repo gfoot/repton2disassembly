@@ -3829,7 +3829,7 @@ print_string_flush_buffers:
     ldx #$00                                                // 27fa: a2 00
     jmp osbyte                                              // 27fc: 4c f4 ff
     .byt $ea                                                // 27ff: .
-// Four strips per level; positive refers to a position in data_levelstrip_xx
+// Each level consists of four 32x8 strips.  Positive values refer to entries in data_levelstrip_xx
 // For a negative value, clear the top bit and fill the level strip with that object
 //     e.g. &98 => fill with object &18 which is a type of wall
 data_level_strip_indices:
@@ -3865,7 +3865,7 @@ data_level_0e_strips:
     .byt $2b, $2c, $2d, $9e                                 // 2838: +,-.
 data_level_0f_strips:
     .byt $2e, $86, $86, $2f                                 // 283c: .../
-// Six bytes per transporter - level, x, y, target level, target x, target y
+// Six bytes per transporter - level, x, y, target level, target x, target y.  This is constant data except that the top bit of 'level' gets set when the transporter is collected.  This is then cleared next time a new game is started, along with all the top bits of this block and the next few blocks (spirits, monsters, puzzle pieces).
 data_transporters:
 data_transporter_00:
     .byt $00, $00, $08, $0d, $1e, $17                       // 2840: ......
@@ -3999,6 +3999,7 @@ data_transporter_3f:
     .byt $0f, $17, $1f, $0f, $17, $1f                       // 29ba: ......
 data_transporters_end:
     .byt $00, $00, $00, $00, $00, $00, $00, $00             // 29c0: ........
+// Each spirit gets four bytes - its x,y position, the direction it's moving in, and whether or not it is alive.  This is variable data.
 data_spirit_x:
 data_spirit_y = data_spirit_x+1
 data_spirit_dir = data_spirit_x+2
@@ -4007,6 +4008,7 @@ data_spirit_alive = data_spirit_x+3
     .byt $00, $00, $00, $00, $00, $00, $00, $00             // 29d0: ........
     .byt $00, $00, $00, $00, $00, $00, $00, $00             // 29d8: ........
     .byt $00, $00, $00, $00, $00, $00, $00, $00             // 29e0: ........
+// There appear to be 8 bytes per monster, storing the x,y position, x,y velocity, a timer to track the cracked egg and initial stationary period, and a flag to say whether the monster is alive.  The last two bytes for each monster appear to be unused.  This is variable data.
 data_monsters_x:
 data_monsters_y = data_monsters_x+1
 data_monsters_vel_x = data_monsters_x+2
@@ -4015,6 +4017,7 @@ data_monsters_spawntimer = data_monsters_x+4
 data_monsters_alive = data_monsters_x+5
     .byt $00, $00, $00, $00, $00, $00, $00, $00             // 29e8: ........
     .byt $00, $00, $00, $00, $00, $00, $00, $00             // 29f0: ........
+// Each puzzle pieces has four bytes - the level it appears in, its x,y location in that level, and its position within the assembled puzzle at the bottom of map 0.  Most of this is constant data, but the top bit of 'level' is variable - it gets set when the piece is collected.
 data_puzzlepieces_level:
 data_puzzlepieces_x = data_puzzlepieces_level+1
 data_puzzlepieces_y = data_puzzlepieces_level+2
@@ -4040,6 +4043,7 @@ data_puzzlepieces_pos = data_puzzlepieces_level+3
     .byt $00, $01, $03, $65, $00, $03, $03, $66             // 2a88: ...e...f
     .byt $00, $05, $03, $67, $00, $07, $03, $68             // 2a90: ...g...h
     .byt $00, $09, $03, $69, $00, $0b, $03, $6a             // 2a98: ...i...j
+// For each tile (indexed by the 'obj_*' constants) there are 16 subtiles arranged in a 4x4 grid.  Each gets one index here, which indexes into data_tilegraphics_tiles.
 data_tilegraphics_indices:
 data_tile00_empty:
     .byt $6b, $6b, $6b, $6b, $6b, $6b, $6b, $6b             // 2aa0: kkkkkkkk
@@ -4263,6 +4267,7 @@ data_tile48_puzzlepiece:
 data_tile49_puzzlepiece:
     .byt $a4, $a8, $a4, $a6, $af, $a8, $af, $a8             // 2f30: ........
     .byt $af, $a8, $af, $a8, $a4, $a1, $a4, $a0             // 2f38: ........
+// This is the actual image data for the subtiles.  8 bytes per 4x8 subtile, in the usual BBC Micro 4-colour format.  I've labelled some of them, e.g. bits of sprites, but not all of them.
 data_tilegraphics_tiles:
 data_sprite0a_row0:
     .byt $00, $00, $02, $02, $0d, $07, $01, $0f             // 2f40: ........
@@ -4411,6 +4416,7 @@ data_sprite09_row2:
     .byt $00, $08, $0c, $0c, $0e, $0e, $4a, $0e             // 3368: ......J.
     .byt $07, $07, $16, $07, $03, $03, $01, $00             // 3370: ........
     .byt $0e, $0e, $0e, $0e, $0c, $0c, $08, $00             // 3378: ........
+// Some code is embedded in the middle of data_tilegarphics_tiles
 data_additional_palette_levels_0_1:
     .byt $14, $11                                           // 3380: ..
 // Referenced 2 times by $1cf1, $2412
@@ -4453,16 +4459,18 @@ transporter_same_level:
 // Referenced 1 time by $17f1
 move_monster2:
     jmp move_monster                                        // 33b8: 4c a5 18
+// I think this is unused junk, it looks like a little bit of code and some string data, but it's not used as far as I can tell.
     .byt $4c, $32, $18, $ea, $ea, $ea, $ea, $ea             // 33bb: L2......
     .byt $ea, $ea, $60, $ea, $01, $8a, $ce                  // 33c3: ..`....
     .byt "Puzzle"                                           // 33ca: 50 75 7a ...
     .byt $02, $0d, $ea, $ea, $ea, $ea, $ea, $ea             // 33d0: ........
-// More tile graphics data
+// More data_tilegraphics_tiles data
     .byt $c0, $c0, $00, $80, $80, $80, $80, $80             // 33d8: ........
     .byt $67, $25, $23, $12, $33, $01, $00, $00             // 33e0: g%#.3...
     .byt $4b, $4b, $a5, $0b, $5b, $1c, $0f, $03             // 33e8: KK..[...
     .byt $5f, $af, $1b, $45, $0f, $27, $4f, $0c             // 33f0: _..E.'O.
     .byt $0e, $06, $4e, $0c, $8c, $08, $00, $00             // 33f8: ..N.....
+// The font characters kind of also function as tilegraphics tiles, or at least are embedded in that data block.  8 bytes each as usual - and this is just a zero-reference point, the actual characters don't really start until 3500 (space)
 data_font:
     .byt $30, $30, $30, $10, $10, $00, $00, $00             // 3400: 000.....
     .byt $20, $00, $a0, $d0, $f0, $f0, $f0, $60             // 3408:  ......`
@@ -4997,6 +5005,7 @@ data_sprite1e_row3:
     .byt $0c, $08, $08, $08, $08, $08, $08, $08             // 41e8: ........
     .byt $07, $03, $00, $00, $00, $01, $01, $00             // 41f0: ........
     .byt $0c, $0e, $0e, $0e, $0c, $0c, $08, $00             // 41f8: ........
+// Level strip data - each strip is a 32x8 region of the level, packed with 5 bits per tile, so 0x30 bytes per strip.  Transporters and puzzle pieces are defined elsewhere.  The 'end' object on map 0 is encoded as a spirit, with special code making the substitution.
 data_levelstrip_00:
     .byt $e0, $ff, $ff, $ff, $ff, $ff, $ff, $ff             // 4200: ........
     .byt $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff             // 4208: ........
