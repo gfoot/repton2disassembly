@@ -11,21 +11,12 @@
 import re
 import sys
 
-comment_backslash_re = re.compile(r".*//.*\\$")
 org_re = re.compile(r"\s*\* = (.*)")
-copyblock_re = re.compile(r"\s*copyblock .*")
-skip_re = re.compile(r"\s*skip .*")
 
 sections = { "": [] }
 current_section = ""
 
 for line in sys.stdin:
-
-	if copyblock_re.match(line) or skip_re.match(line):
-		continue
-
-	if comment_backslash_re.match(line):
-		line = line.strip() + " \n"
 
 	if org_re.match(line):
 		current_section = org_re.match(line).group(1)

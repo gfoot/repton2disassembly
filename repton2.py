@@ -1,15 +1,16 @@
 from commands import *
-from trace6502 import hook_subroutine
 import acorn
+import config
 
-load(0x0d00, "repton2.bin")
+load(0x0d00, "repton2.bin", '6502')
 
 move(0x0380, 0x6000, 0x60)
 move(0x0880, 0x6060, 0x40)
 move(0x70a0, 0x60a0, 0x613e-0x60a0)
 
-acorn.add_standard_labels()
+acorn.bbc()
 #acorn.is_sideways_rom()
+config.set_label_references(False)
 
 # These two options default to True (on) and are probably helpful during the
 # initial stages of a disassembly, but you might want to turn them off
