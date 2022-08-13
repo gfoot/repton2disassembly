@@ -5680,6 +5680,7 @@ music_playnote_disabled
     rts                                                               // 605d: 60          `   :03dd[1]
 
     .byt $ea, $ea                                                     // 605e: ea ea       ..  :03de[1]
+* = $6060
 * = $0880
 place_spirit_rts
     rts                                                               // 6060: 60          `   :0880[2]
@@ -5724,6 +5725,11 @@ start1
     jmp start2                                                        // 609a: 4c 84 1c    L.. :08ba[2]
 
     .byt $ea, $ea, $ea                                                // 609d: ea ea ea    ... :08bd[2]
+// Everything from this point is not usually part of D.REPB, it's based on things that
+// the official release does in separate loader code in D.REPA
+* = $60a0
+// Everything from this point is not usually part of D.REPB, it's based on things that
+// the official release does in separate loader code in D.REPA
 // Everything from this point is not usually part of D.REPB, it's based on things that
 // the official release does in separate loader code in D.REPA
 * = $70a0
@@ -5806,3 +5812,39 @@ boot_relocate_0380_loop
 // Chain to D.REPB's (relocated) start routine
     jmp start1                                                        // 613b: 4c b5 08    L.. :713b[3]
 
+* = $613e
+pydis_end
+
+// Automatically generated labels:
+//     l0000
+//     l0001
+//     l0002
+//     l0003
+//     l0005
+//     l0006
+//     l0007
+//     l000d
+//     l000e
+//     l000f
+//     l0040
+//     l0064
+//     l0067
+//     l0072
+//     l0073
+//     l0077
+//     l0078
+//     l007e
+//     l0088
+//     l0089
+//     l034e
+//     l0352
+//     l0353
+//     l0354
+//     l0355
+//     l0356
+//     l0bfc
+//     l2940
+//     l29a0
+//     l7000
+//     l7060
+//     sub_c10f4
