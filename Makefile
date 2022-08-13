@@ -2,8 +2,8 @@ PY8DIS_PATH = ../py8dis/py8dis
 
 all: repton2.s compare
 
-repton2.s: repton2.py repton2.bin fixup.py
-	PYTHONPATH=$(PY8DIS_PATH) python $< --xa | python fixup.py > $@
+repton2.s: repton2.py repton2.bin
+	PYTHONPATH=$(PY8DIS_PATH) python $< --xa > $@
 
 %/repton2.bin: %/repton2.s
 	xa $< -o $@ 
